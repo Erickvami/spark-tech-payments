@@ -71,12 +71,28 @@ export const deletePayment = async (id: number) => {
           method: 'DELETE',
       });
 
-      if (!response.ok) {
-          throw new Error('Failed to delete payment');
-      }
-
+      return await response.json()
   } catch (error) {
       console.error('Error deleting payment:', error);
       throw error;
+  }
+};
+
+export const putPayment = async (payment: Payment) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${payment.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payment),
+    });
+
+    if (!response.ok) throw new Error(`Error: ${response.status} - ${response.text()}`);
+
+    return response.json();
+  } catch (error) {
+    console.error('Error updating payment:', error);
+    throw error;
   }
 };

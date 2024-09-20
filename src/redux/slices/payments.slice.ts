@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Payment } from '../../models/payment.model';
-import { addPayment, deletePayment, getAllPayments } from '../../services/payments.service';
+import { addPayment, deletePayment, getAllPayments, putPayment } from '../../services/payments.service';
 
 interface PaymentsState {
   data: Payment[] | null;
@@ -42,6 +42,18 @@ export const removePayment = createAsyncThunk<void, number>(
       await dispatch(getPayments());
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to delete payment');
+    }
+  }
+);
+
+export const updatePayment = createAsyncThunk<Payment, Payment>(
+  'payments/updatePayment',
+  async (payment, { rejectWithValue }) => {
+    try {
+      const updatedPayment = await putPayment(payment);
+      return updatedPayment;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update payment');
     }
   }
 );

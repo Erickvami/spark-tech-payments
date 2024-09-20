@@ -1,10 +1,11 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import NotFoundPage from './pages/not-found';
-// import { movieLoader } from './pages/movie/loader';
 import PaymentsPage from './pages/payments';
 import { paymentsLoader } from './pages/payments/index.loader';
 import AddPaymentPage from './pages/payments/add';
+import PaymentPage from './pages/payments/details';
+import { paymentLoader } from './pages/payments/details/index.loader';
 
 const router = createBrowserRouter([
   {
@@ -20,12 +21,11 @@ const router = createBrowserRouter([
     path: 'payments/add',
     element: <AddPaymentPage />,
   },
-
-//   {
-//     path: 'payments/:id',
-//     element: <MoviePage />,
-//     loader: movieLoader,
-//   },
+  {
+    path: 'payments/:id',
+    element: <PaymentPage />,
+    loader: paymentLoader,
+  },
   {
     path: '/notfound',
     element: <NotFoundPage />,
