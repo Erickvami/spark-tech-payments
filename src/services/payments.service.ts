@@ -1,3 +1,5 @@
+import { Payment } from "../models/payment.model";
+
 // build base api url for this service
 const API_BASE_URL = process.env.REACT_APP_API + '/payments';
 
@@ -5,12 +7,13 @@ export const getAllPayments = async () => {
   try {
     const response = await fetch(API_BASE_URL);
     if (!response.ok) {
-      throw new Error('Failed to fetch movies');
+      throw new Error('Failed to fetch payments');
     }
-    const movies = await response.json();
-    return movies;
+    const payments = await response.json();
+    console.log(payments)
+    return payments;
   } catch (error) {
-    console.error('Error fetching movies:', error);
+    console.error('Error fetching payments:', error);
     throw error;
   }
 };
@@ -40,4 +43,40 @@ export const getPaymentByReference = async (reference: string) => {
         console.error(error);
         throw error;
     }
+};
+
+
+export const addPayment = async (payment: Payment) => {
+  console.log(JSON.stringify(payment))
+  try {
+      const response = await fetch(`${API_BASE_URL}`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payment),
+      });
+
+      return response.json();
+      // return await response.json();
+  } catch (error: any) {
+      console.error('Error on createPayment:', error);
+      throw error;
+  }
+};
+
+export const deletePayment = async (id: number) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/${id}`, {
+          method: 'DELETE',
+      });
+
+      if (!response.ok) {
+          throw new Error('Failed to delete payment');
+      }
+
+  } catch (error) {
+      console.error('Error deleting payment:', error);
+      throw error;
+  }
 };

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Payment } from '../../models/payment.model';
-import { getAllPayments } from '../../services/payments.service';
+import { addPayment, deletePayment, getAllPayments } from '../../services/payments.service';
 
 interface PaymentsState {
   data: Payment[] | null;
@@ -21,17 +21,30 @@ export const getPayments = createAsyncThunk(
   }
 );
 
-// export const createPayment = createAsyncThunk<Payment, Payment>(
-//     'payments/createPayment',
-//     async (payment, { rejectWithValue }) => {
-//       try {
-//         const newPayment = await addPayment(payment);
-//         return null;
-//       } catch (error: any) {
-//         return rejectWithValue(error.message || 'Failed to create payment');
-//       }
-//     }
-//   );
+export const createPayment = createAsyncThunk<Payment, Payment>(
+    'payments/createPayment',
+    async (payment, { rejectWithValue }) => {
+      try {
+        const newPayment = await addPayment(payment);
+        return newPayment;
+      } catch (error: any) {
+        return rejectWithValue(error.message || 'Failed to create payment');
+      }
+    }
+  );
+
+
+export const removePayment = createAsyncThunk<void, number>(
+  'payments/removePayment',
+  async (id, { dispatch, rejectWithValue }) => {
+    try {
+      await deletePayment(id);
+      await dispatch(getPayments());
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete payment');
+    }
+  }
+);
 
 const paymentsSlice = createSlice({
   name: 'payments',
@@ -53,25 +66,37 @@ const paymentsSlice = createSlice({
       })
       .addCase(getPayments.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch weather data';
+        state.error = action.error.message || 'Failed to fetch payments data';
+      });
+      builder
+      .addCase(createPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-    //   .addCase(createPayment.pending, (state) => {
-    //     state.loading = true;
-    //     state.error = null;
-    //   })
-    //   .addCase(createPayment.fulfilled, (state, action: PayloadAction<Payment>) => {
-    //     state.loading = false;
-    //     // Asegúrate de que state.data no sea null
-    //     if (state.data) {
-    //       state.data.push(action.payload);
-    //     } else {
-    //       state.data = [action.payload];
-    //     }
-    //   })
-    //   .addCase(createPayment.rejected, (state, action) => {
-    //     state.loading = false;
-    //     state.error = action.payload as string;
-    //   });
+      .addCase(createPayment.fulfilled, (state, action: PayloadAction<Payment>) => {
+        state.loading = false;
+        if (state.data) {
+          state.data.push(action.payload);
+        } else {
+          state.data = [action.payload];
+        }
+      })
+      .addCase(createPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+      builder
+      .addCase(removePayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(removePayment.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(removePayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to delete payment';
+      });
   },
 });
 

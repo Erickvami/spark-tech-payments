@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, List, Skeleton, Stack } from '@mui/material';
 import { Payment } from '../../models/payment.model';
@@ -9,14 +9,19 @@ import PaymentItem from '../payment-item';
 const PaymentList: React.FC<{payments?: Payment[] | undefined}> = ({ payments }) => {
     const dispatch: AppDispatch = useDispatch();
     const { data, loading, error } = useSelector((state: RootState) => state.payments);
+    const isLoaded = useRef(false);
 
     useEffect(() => {
-        if (!payments || !payments.length)
+        if (!data?.length)
             dispatch(getPayments());
-    }, [dispatch, payments]);
+    }, [dispatch, data]);
 
     const paymentsToDisplay = useMemo(() => {
-        return payments && payments.length > 0 ? payments : data;
+        if (!isLoaded.current) {
+            isLoaded.current = true;
+            return payments || [];
+        }
+        return data || [];
     }, [payments, data]);
 
     const paymentItems = useMemo(() => paymentsToDisplay?.map((payment) => <PaymentItem key={payment.id} payment={payment} />), [paymentsToDisplay]);

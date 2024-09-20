@@ -8,7 +8,7 @@ import PaymentList from '../../components/payment-list';
 const PaymentsPage: React.FC = () => {
     const { payments } = useLoaderData() as { payments: Payment[] };
 
-    return (<Stack className='movies page' alignItems={'center'}>
+    return (<Stack className='payments page' alignItems={'center'}>
         <PaymentList payments={payments} />
     </Stack>)
 }

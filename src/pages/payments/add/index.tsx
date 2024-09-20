@@ -1,40 +1,34 @@
-// src/pages/AddPaymentPage/index.tsx
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import './index.scss';
 import { TextField, Stack, Button, Typography, Alert } from '@mui/material';
 import { Payment } from '../../../models/payment.model';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../redux/store';
-// import { createPayment } from '../../../redux/slices/payments.slice';
+import { createPayment } from '../../../redux/slices/payments.slice';
 import { useNavigate } from 'react-router-dom';
 
 const AddPaymentPage: React.FC = () => {
     const dispatch: AppDispatch = useDispatch();
     const navigate = useNavigate();
 
-    // Estado local para el formulario
     const [payment, setPayment] = useState<Payment>(new Payment());
 
-    // Estado para manejar errores de validación
-    const [errors, setErrors] = useState<Partial<Payment>>({});
+    const [errors, setErrors] = useState<Partial<Record<keyof Payment, string>>>({});
 
-    // Estado para manejar la retroalimentación al usuario
     const [success, setSuccess] = useState<string | null>(null);
     const [submissionError, setSubmissionError] = useState<string | null>(null);
 
-    // Obtener el estado de la creación del pago desde Redux
     const { loading, error } = useSelector((state: RootState) => state.payments);
 
-    // Manejar cambios en los campos de entrada
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-
-        setPayment((prev) => ({
+        setPayment((prev) => {
+            return ({
             ...prev,
-            [name]: name === 'quality' ? Number(value) : value,
-        }));
+            [name]: name === 'quantity' ? (!isNaN(Number(value)) ? Number(value) : 0) : value,
+            })
+        });
 
-        // Limpiar errores al modificar el campo
         setErrors((prev) => ({
             ...prev,
             [name]: undefined,
@@ -42,15 +36,15 @@ const AddPaymentPage: React.FC = () => {
     };
 
     const validate = (): boolean => {
-        const newErrors: Partial<Payment> = {};
+        const newErrors: Partial<Record<keyof Payment, string>> = {};
 
         if (!payment.reference.trim()) {
             newErrors.reference = 'required.';
         }
 
-        // if (payment.quantity <= 0) {
-        //     newErrors.quantity = 'La cantidad debe ser mayor que $0.';
-        // }
+        if ((payment.quantity ?? 0) <= 0) {
+            newErrors.quantity = 'La cantidad debe ser mayor que $0.';
+        }
 
         if (!payment.sender?.trim()) {
             newErrors.sender = 'required';
@@ -73,7 +67,7 @@ const AddPaymentPage: React.FC = () => {
         }
 
         try {
-            // await dispatch(createPayment(payment)).unwrap();
+            await dispatch(createPayment(payment)).unwrap();
             setSuccess('Pago creado exitosamente.');
             setSubmissionError(null);
             navigate('/payments');
@@ -106,15 +100,15 @@ const AddPaymentPage: React.FC = () => {
 
             <TextField
                 label='Cantidad ($)'
-                name='quality'
+                name='quantity'
                 type='number'
-                value={payment.quantity}
+                value={payment.quantity === 0 ? '': payment.quantity}
                 onChange={handleChange}
                 error={!!errors.quantity}
                 helperText={errors.quantity}
                 required
                 fullWidth
-                inputProps={{ min: 0, step: '0.01' }}
+                inputProps={{ min: 0, step: '100', max: 8000 }}
             />
 
             <TextField
